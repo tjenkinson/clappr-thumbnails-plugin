@@ -22,8 +22,8 @@ module.exports = {
         }
       },
       {
-        test: /\.css$/,
-        loaders: ['style', 'css'],
+        test: /\.sass$/,
+        loaders: ['style', 'css', 'sass?includePaths[]=' + path.resolve(__dirname, "./node_modules/compass-mixins/lib")],
       },
     ],
   },

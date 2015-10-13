@@ -5,6 +5,12 @@
 <body>
   <div id="player"></div>
   <script>
-    var player = new Clappr.Player({source: "assets/video.mp4", parentId: "#player"});
+    var player = new Clappr.Player({
+    	source: "assets/video.mp4",
+    	parentId: "#player",
+    	plugins: {
+            core: [ClapprThumbnailsPlugin]
+        }
+    });
   </script>
 </body>

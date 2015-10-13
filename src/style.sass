@@ -1,0 +1,14 @@
+@import "compass/css3";
+
+.scrub-thumbnails {
+	position: absolute;
+	bottom: 65px;
+	width: 100%;
+	vertical-align: middle;
+
+	@include transition(opacity 0.1s ease);
+	
+	&.hidden {
+		opacity: 0;
+	}
+}
