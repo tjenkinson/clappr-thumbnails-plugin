@@ -5,12 +5,25 @@
 <body>
   <div id="player"></div>
   <script>
+    // generate thumbs data
+    var thumbs = [];
+    for (var i=0; i<104; i++) {
+      thumbs.push({
+        url: "assets/thumbnails/thumb_"+(i+1)+".jpg",
+        time: 1 + (i*2)
+      });
+    }
+
     var player = new Clappr.Player({
     	source: "assets/video.mp4",
     	parentId: "#player",
     	plugins: {
-            core: [ClapprThumbnailsPlugin]
-        }
+        core: [ClapprThumbnailsPlugin],
+      },
+      scrubThumbnails: {
+        thumbHeight: 84,
+        thumbs: thumbs
+      }
     });
   </script>
 </body>

@@ -2,13 +2,38 @@
 
 .scrub-thumbnails {
 	position: absolute;
-	bottom: 65px;
+	bottom: 55px;
 	width: 100%;
 	vertical-align: middle;
 
-	@include transition(opacity 0.1s ease);
+	@include transition(opacity 0.3s ease);
 	
 	&.hidden {
 		opacity: 0;
+	}
+
+	.backdrop {
+		background-color: #000000;
+		overflow: hidden;
+
+		.carousel {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			white-space: nowrap;
+			img {
+				opacity: 0.08;
+				width: auto;
+				
+				&.active {
+					opacity: 1;
+				}
+
+				&.next {
+					opacity: 0.15;
+				}
+			}
+		}
 	}
 }
