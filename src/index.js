@@ -85,6 +85,10 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   _loadThumbnails(onLoaded) {
     var thumbs = this._getOptions().thumbs
     var thumbsToLoad = thumbs.length
+    if (thumbsToLoad === 0) {
+      onLoaded();
+      return;
+    }
     for(let thumb of thumbs) {
       // preload each thumbnail
       let img = new Image()
@@ -196,7 +200,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     if (!this._loaded) {
       return
     }
-    if (this._show) {
+    if (this._show && this._getOptions().thumbs.length > 0) {
       this.$el.removeClass("hidden")
       this._updateCarouselPosition()
     }
