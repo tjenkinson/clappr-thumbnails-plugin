@@ -9,13 +9,13 @@
     var thumbs = [];
     for (var i=0; i<104; i++) {
       thumbs.push({
-        url: "assets/thumbnails/thumb_"+(i+1)+".jpg",
+        url: "http://tjenkinson.me/clappr-thumbnails-plugin/assets/thumbnails/thumb_"+(i+1)+".jpg",
         time: 1 + (i*2)
       });
     }
 
     var player = new Clappr.Player({
-    	source: "assets/video.mp4",
+    	source: "http://tjenkinson.me/clappr-thumbnails-plugin/assets/video.mp4",
     	parentId: "#player",
     	plugins: {
         core: [ClapprThumbnailsPlugin],
