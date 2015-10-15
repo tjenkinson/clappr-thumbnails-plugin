@@ -76,7 +76,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     for (let i=0; i<thumbs.length; i++) {
       let current = thumbs[i]
       let next = i<thumbs.length-1 ? thumbs[i+1] : null
-      let duration = next ? next.time - current.time : Infinity
+      let duration = next ? next.time - current.time : null
       this._thumbDurations.push(duration)
     }
   }
@@ -114,9 +114,10 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   // calculate how far along the carousel should currently be slid
   // depending on where the user is hovering on the progress bar
   _updateCarouselPosition() {
-    var hoverPosition = this._hoverPosition;
+    var hoverPosition = this._hoverPosition
+    var videoDuration = this.core.mediaControl.container.getDuration()
     // the time into the video at the current hover position
-    var hoverTime = this.core.mediaControl.container.getDuration() * hoverPosition
+    var hoverTime = videoDuration * hoverPosition
     var backdropWidth = this._$backdrop.width()
     var carouselWidth = this._$backdropCarousel.width()
 
@@ -132,10 +133,16 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     var thumbIndex = this._getThumbIndexForTime(hoverTime)
     var thumb = thumbs[thumbIndex]
     var thumbDuration = this._thumbDurations[thumbIndex]
+    if (thumbDuration === null) {
+      // the last thumbnail duration will be null as it can't be determined
+      // e.g the duration of the video may increase over time (live stream)
+      // so calculate the duration now so this last thumbnail lasts till the end
+      thumbDuration = Math.max(videoDuration - thumb.time, 0)
+    }
 
     // determine how far accross that thumbnail we are
-    var timeIntoThumb = Math.max(hoverTime - thumb.time, 0)
-    var positionInThumb = thumbDuration !== Infinity ? timeIntoThumb / thumbDuration : 0
+    var timeIntoThumb = hoverTime - thumb.time
+    var positionInThumb = timeIntoThumb / thumbDuration
     var xCoordInThumb = thumbWidth * positionInThumb
 
     // now calculate the position along carousel that we want to be above the hover position
@@ -143,7 +150,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // and finally the position of the carousel when the hover position is taken in to consideration
     var carouselXCoord = xCoordInCarousel - (hoverPosition*backdropWidth)
     
-    this._$backdropCarousel.css("left", -Math.max(carouselXCoord, 0))
+    this._$backdropCarousel.css("left", -carouselXCoord)
 
     this._updateActiveThumb(hoverTime)
   }
