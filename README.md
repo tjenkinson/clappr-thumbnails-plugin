@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/clappr-thumbnails-plugin.svg)](https://badge.fury.io/js/clappr-thumbnails-plugin)
+
 # clappr-thumbnails-plugin
 A plugin for clappr which will display thumbnails when hovering over the scrub bar.
 
@@ -10,6 +12,8 @@ Add both Clappr and the thumbnails plugin scripts to your HTML:
   <script type="text/javascript" src="dist/clappr-thumbnails-plugin.js"></script>
 </head>
 ```
+
+You can also find the project on npm: https://www.npmjs.com/package/clappr-thumbnails-plugin
 
 Then just add `ClapprThumbnailsPlugin` into the list of plugins of your player instance, and the options for the plugin go in the `scrubThumbnails` property as shown below.
 
