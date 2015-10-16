@@ -51,7 +51,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   _appendElToMediaControl() {
-    this.core.mediaControl.$el.prepend(this.el)
+    this.core.mediaControl.$el.append(this.el)
   }
 
   _onMouseMove(e) {
@@ -191,10 +191,35 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     }
   }
 
+  _updateSpotlightThumb() {
+    var hoverPosition = this._hoverPosition
+    var videoDuration = this.core.mediaControl.container.getDuration()
+    // the time into the video at the current hover position
+    var hoverTime = videoDuration * hoverPosition
+
+    // determine which thumbnail applies to the current time
+    var thumbIndex = this._getThumbIndexForTime(hoverTime)
+    var thumb = thumbs[thumbIndex]
+    
+    // update thumbnail
+    this._$spotlightImg.attr("src", thumb.url)
+
+    var elWidth = this.$el.width()
+    var thumbWidth = this._$spotlightImg.width()
+
+    var spotlightXPos = (elWidth * hoverPosition) - (thumbWidth / 2)
+    
+    // adjust so the entire thumbnail is always visible
+    spotlightXPos = Math.max(Math.min(spotlightXPos, elWidth - thumbWidth), 0)
+
+    this._$spotlight.css("left", spotlightXPos)
+  }
+
   // returns the thumbnail which represents a time in the video
+  // or null if there is no thumbnail that can represent the time
   _getThumbIndexForTime(time) {
     for(let i=thumbs.length-1; i>=0; i--) {
-      let thumb = thumbs[i];
+      let thumb = thumbs[i]
       if (thumb.time <= time) {
         return i
       }
@@ -210,6 +235,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     if (this._show && this._getOptions().thumbs.length > 0) {
       this.$el.removeClass("hidden")
       this._updateCarouselPosition()
+      this._updateSpotlightThumb()
     }
     else {
       this.$el.addClass("hidden")
@@ -217,11 +243,17 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   render() {
+    var thumbHeight = this._getOptions().thumbHeight
     this._$backdrop = $("<div />").addClass("backdrop")
-    this._$backdrop.height(this._getOptions().thumbHeight)
+    this._$backdrop.height(thumbHeight)
     this._$backdropCarousel = $("<div />").addClass("carousel")
     this._$backdrop.append(this._$backdropCarousel)
     $(this.el).append(this._$backdrop)
+    this._$spotlight = $("<div />").addClass("spotlight")
+    this._$spotlight.height(thumbHeight)
+    this._$spotlightImg = $("<img />")
+    this._$spotlight.append(this._$spotlightImg)
+    $(this.el).append(this._$spotlight)
     this.$el.addClass("hidden")
     this._appendElToMediaControl()
     return this
