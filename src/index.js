@@ -48,7 +48,8 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   _appendElToMediaControl() {
-    this.core.mediaControl.$el.append(this.el)
+    // insert after the background
+    this.core.mediaControl.$el.find(".media-control-background").first().after(this.el)
   }
 
   _onMouseMove(e) {
