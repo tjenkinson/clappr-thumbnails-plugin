@@ -21,9 +21,6 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this._$thumbs = []
     // the duration of each thumbnail (ie time between it's start time and the start time of the next one)
     this._thumbDurations = []
-    this._activeThumbIndex = null
-    this._previousThumbIndex = null
-    this._nextThumbIndex = null
     this._init()
   }
 
@@ -86,22 +83,30 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     var thumbs = this._getOptions().thumbs
     var thumbsToLoad = thumbs.length
     if (thumbsToLoad === 0) {
-      onLoaded();
-      return;
+      onLoaded()
+      return
     }
+
+    var onImgLoaded = () => {
+      if (--thumbsToLoad === 0) {
+        onLoaded()
+      }
+    }
+
     for(let thumb of thumbs) {
       // preload each thumbnail
-      let img = new Image()
-      img.src = thumb.url
-      img.onload = () => {
-        if (--thumbsToLoad === 0) {
-          onLoaded()
-        }
-      }
+      let $img = $("<img />").one("load", onImgLoaded).attr("src", thumb.url)
+      // put image in dom to prevent browser removing it from cache
+      this._$imageCache.append($img)
     }
   }
 
   _loadBackdrop() {
+    if (!this._getOptions().backdropHeight) {
+      // disabled
+      return
+    }
+
     // append each of the thumbnails to the backdrop
     var thumbs = this._getOptions().thumbs
     for(let thumb of thumbs) {
@@ -113,7 +118,12 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
 
   // calculate how far along the carousel should currently be slid
   // depending on where the user is hovering on the progress bar
-  _updateCarouselPosition() {
+  _updateCarousel() {
+    if (!this._getOptions().backdropHeight) {
+      // disabled
+      return
+    }
+
     var hoverPosition = this._hoverPosition
     var videoDuration = this.core.mediaControl.container.getDuration()
     // the time into the video at the current hover position
@@ -152,46 +162,29 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     
     this._$backdropCarousel.css("left", -carouselXCoord)
 
-    this._updateActiveThumb(hoverTime)
-  }
-
-  // marks the active thumbnail
-  _updateActiveThumb(hoverTime) {
-    var thumbs = this._getOptions().thumbs
-    var thumbIndex = this._getThumbIndexForTime(hoverTime)
-    var previousThumbIndex = thumbIndex > 0 ? thumbIndex-1 : null
-    var nextThumbIndex = thumbs.length > thumbIndex-1 ? thumbIndex + 1 : null
-
-    if (this._activeThumbIndex !== thumbIndex) {
-      if (this._activeThumbIndex !== null) {
-        this._$thumbs[this._activeThumbIndex].removeClass("active")
+    // now update the transparencies so that they fade in around the active one
+    for(let i=0; i<thumbs.length; i++) {
+      let thumbXCoord = thumbWidth * i
+      let distance = thumbXCoord - xCoordInCarousel
+      if (distance < 0) {
+        // adjust so that distance is always a measure away from
+        // each side of the active thumbnail
+        // at every point on the active thumbnail the distance should
+        // be 0
+        distance = Math.min(0, distance+thumbWidth)
       }
-      this._activeThumbIndex = thumbIndex
-      this._$thumbs[thumbIndex].addClass("active")
-    }
-
-    if (this._previousThumbIndex !== previousThumbIndex) {
-      if (this._previousThumbIndex !== null) {
-        this._$thumbs[this._previousThumbIndex].removeClass("next")
-      }
-      this._previousThumbIndex = previousThumbIndex
-      if (previousThumbIndex !== null) {
-        this._$thumbs[previousThumbIndex].addClass("next")
-      }
-    }
-
-    if (this._nextThumbIndex !== nextThumbIndex) {
-      if (this._nextThumbIndex !== null) {
-        this._$thumbs[this._nextThumbIndex].removeClass("next")
-      }
-      this._nextThumbIndex = nextThumbIndex
-      if (nextThumbIndex !== null) {
-        this._$thumbs[nextThumbIndex].addClass("next")
-      }
+      // fade over the width of 1 thumbnail
+      let opacity = Math.max(0.6 - (Math.abs(distance)/(1*thumbWidth)), 0.08)
+      this._$thumbs[i].css("opacity", opacity)
     }
   }
 
   _updateSpotlightThumb() {
+    if (!this._getOptions().spotlightHeight) {
+      // disabled
+      return
+    }
+
     var hoverPosition = this._hoverPosition
     var videoDuration = this.core.mediaControl.container.getDuration()
     // the time into the video at the current hover position
@@ -205,7 +198,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this._$spotlightImg.attr("src", thumb.url)
 
     var elWidth = this.$el.width()
-    var thumbWidth = this._$spotlightImg.width()
+    var thumbWidth = this._$spotlight.outerWidth()
 
     var spotlightXPos = (elWidth * hoverPosition) - (thumbWidth / 2)
     
@@ -234,7 +227,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     }
     if (this._show && this._getOptions().thumbs.length > 0) {
       this.$el.removeClass("hidden")
-      this._updateCarouselPosition()
+      this._updateCarousel()
       this._updateSpotlightThumb()
     }
     else {
@@ -243,17 +236,24 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   render() {
-    var thumbHeight = this._getOptions().thumbHeight
-    this._$backdrop = $("<div />").addClass("backdrop")
-    this._$backdrop.height(thumbHeight)
-    this._$backdropCarousel = $("<div />").addClass("carousel")
-    this._$backdrop.append(this._$backdropCarousel)
-    $(this.el).append(this._$backdrop)
-    this._$spotlight = $("<div />").addClass("spotlight")
-    this._$spotlight.height(thumbHeight)
-    this._$spotlightImg = $("<img />")
-    this._$spotlight.append(this._$spotlightImg)
-    $(this.el).append(this._$spotlight)
+    this._$imageCache = $("<div />").addClass("image-cache")
+    $(this.el).append(this._$imageCache)
+    // if either of the heights are null or 0 then that means that part is disabled
+    if (this._getOptions().backdropHeight) {
+      this._$backdrop = $("<div />").addClass("backdrop")
+      this._$backdrop.height(this._getOptions().backdropHeight)
+      this._$backdropCarousel = $("<div />").addClass("carousel")
+      this._$backdrop.append(this._$backdropCarousel)
+      $(this.el).append(this._$backdrop)
+    }
+    var spotlightHeight = this._getOptions().spotlightHeight
+    if (spotlightHeight) {
+      this._$spotlight = $("<div />").addClass("spotlight")
+      this._$spotlight.height(spotlightHeight)
+      this._$spotlightImg = $("<img />").height(spotlightHeight)
+      this._$spotlight.append(this._$spotlightImg)
+      $(this.el).append(this._$spotlight)
+    }
     this.$el.addClass("hidden")
     this._appendElToMediaControl()
     return this

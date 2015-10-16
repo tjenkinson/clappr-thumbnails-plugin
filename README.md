@@ -18,12 +18,13 @@ Then just add `ClapprThumbnailsPlugin` into the list of plugins of your player i
 
 ```javascript
 var player = new Clappr.Player({
-  source: "http://your.video/here.m3u8",
+  source: "http://your.video/here.mp4",
   plugins: {
     core: [ClapprThumbnailsPlugin]
   },
   scrubThumbnails: {
-    thumbHeight: 84,
+    backdropHeight: 64,
+    spotlightHeight: 84,
     thumbs: [
     	{time: 0, url: "assets/thumbs/thumb_1.jpg"},
     	{time: 2, url: "assets/thumbs/thumb_2.jpg"},
@@ -33,7 +34,8 @@ var player = new Clappr.Player({
 });
 ```
 
-`thumbHeight` is the height the thumbnails will be scaled to and `thumbs` property is an array of all the thumbnails. The `time` property is the time in seconds that maps to the thumbnail image located at `url`. **The thumbnails must appear in the array in ascending time order.**
+`backdropHeight` and `spotlightHeight` are the heights that the thumbnails will be scaled to one backdrop and spotlight respectively. Either of these can be `0` or `null` to disable them. The `thumbs` property is an array of all the thumbnails. The `time` property is the time in seconds that maps to the thumbnail image located at `url`.
+**The thumbnails must appear in the array in ascending time order.**
 
 # Demo
 To run the demo start a web server with the root directory being the root of this repo, and then browse to the "index.html" file in the "demo" folder.
@@ -52,4 +54,3 @@ Build:
 Minified version:
 
 `npm run release`
-

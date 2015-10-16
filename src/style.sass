@@ -11,6 +11,10 @@
 		opacity: 0;
 	}
 
+	.image-cache {
+		display: none;
+	}
+
 	.spotlight {
 		background-color: #000000;
 		overflow: hidden;
@@ -20,6 +24,10 @@
 		border-color: #ffffff;
 		border-style: solid;
 		border-width: 2px;
+
+		img {
+			width: auto;
+		}
 	}
 
 	.backdrop {
@@ -37,18 +45,7 @@
 			height: 100%;
 			white-space: nowrap;
 			img {
-				opacity: 0.08;
 				width: auto;
-
-				@include transition(opacity 0.2s ease);
-				
-				&.active {
-					opacity: 1;
-				}
-
-				&.next {
-					opacity: 0.15;
-				}
 			}
 		}
 	}
