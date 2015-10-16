@@ -1,6 +1,5 @@
 [![npm version](https://badge.fury.io/js/clappr-thumbnails-plugin.svg)](https://badge.fury.io/js/clappr-thumbnails-plugin)
-
-# clappr-thumbnails-plugin
+# Clappr Thumbnails Plugin
 A plugin for clappr which will display thumbnails when hovering over the scrub bar.
 
 # Usage
