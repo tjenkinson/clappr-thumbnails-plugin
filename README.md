@@ -2,6 +2,8 @@
 # Clappr Thumbnails Plugin
 A plugin for clappr which will display thumbnails when hovering over the scrub bar.
 
+![Screenshot](screenshot.jpg)
+
 # Usage
 Add both Clappr and the thumbnails plugin scripts to your HTML:
 
@@ -34,7 +36,8 @@ var player = new Clappr.Player({
 });
 ```
 
-`backdropHeight` and `spotlightHeight` are the heights that the thumbnails will be scaled to one backdrop and spotlight respectively. Either of these can be `0` or `null` to disable them. The `thumbs` property is an array of all the thumbnails. The `time` property is the time in seconds that maps to the thumbnail image located at `url`.
+`backdropHeight` and `spotlightHeight` are the heights that the thumbnails will be scaled to for the backdrop and spotlight respectively. Either of these can be `0` or `null` to disable them. The `thumbs` property is an array of all the thumbnails. The `time` property is the time in seconds that maps to the thumbnail image located at `url`.
+
 **The thumbnails must appear in the array in ascending time order.**
 
 # Demo
