@@ -17,10 +17,10 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this._show = false
     // proportion into seek bar that the user is hovered over 0-1
     this._hoverPosition = 0
-    // references to each thumbnail img
-    this._$thumbs = []
-    // the duration of each thumbnail (ie time between it's start time and the start time of the next one)
-    this._thumbDurations = []
+    // each element is {x, y, w, h, imageW, imageH, url, time, duration}
+    // one entry for each thumbnail
+    this._thumbs = []
+    this._$backdropCarouselImgs = []
     this._init()
   }
 
@@ -30,7 +30,6 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   _init() {
-    this._calculateThumbDurations()
     // preload all the thumbnails in the browser
     this._loadThumbnails(() => {
       // all thumbnails now preloaded
@@ -69,16 +68,6 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this._hoverPosition = Math.min(1, Math.max(offset/this.core.mediaControl.$seekBarContainer.width(), 0))
   }
 
-  _calculateThumbDurations() {
-    var thumbs = this._getOptions().thumbs
-    for (let i=0; i<thumbs.length; i++) {
-      let current = thumbs[i]
-      let next = i<thumbs.length-1 ? thumbs[i+1] : null
-      let duration = next ? next.time - current.time : null
-      this._thumbDurations.push(duration)
-    }
-  }
-
   // download all the thumbnails
   _loadThumbnails(onLoaded) {
     var thumbs = this._getOptions().thumbs
@@ -88,18 +77,61 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
       return
     }
 
-    var onImgLoaded = () => {
-      if (--thumbsToLoad === 0) {
-        onLoaded()
-      }
-    }
+    for(let i=0; i<thumbs.length; i++) {
+      let thumb = thumbs[i]
+      this._thumbs.push(null)
 
-    for(let thumb of thumbs) {
+      let next = i<thumbs.length-1 ? thumbs[i+1] : null
+      // the duration this thumb lasts for
+      // if it is the last thumb then duration will be null
+      let duration = next ? next.time - thumb.time : null
+
       // preload each thumbnail
-      let $img = $("<img />").one("load", onImgLoaded).attr("src", thumb.url)
-      // put image in dom to prevent browser removing it from cache
-      this._$imageCache.append($img)
+      let $img = $("<img />")
+
+      let onImgLoaded = () => {
+        // put image in dom to prevent browser removing it from cache
+        this._$imageCache.append($img)
+        let imageW = $img[0].width
+        let imageH = $img[0].height
+        this._thumbs[i] = {
+          imageW: imageW, // actual width of image
+          imageH: imageH, // actual height of image
+          x: thumb.x || 0, // x coord in image of sprite
+          y: thumb.y || 0, // y coord in image of sprite
+          w: thumb.w || imageW, // width of sprite
+          h: thumb.h || imageH, // height of sprite
+          url: thumb.url,
+          time: thumb.time, // time this thumb represents
+          duration: duration // how long (from time) this thumb represents
+        }
+
+        if (--thumbsToLoad === 0) {
+          onLoaded()
+        }
+      }
+      $img.one("load", onImgLoaded).attr("src", thumb.url)
     }
+  }
+
+  // builds a dom element which represents the thumbnail
+  // scaled to the provided height
+  _buildImg(thumb, height) {
+    var scaleFactor = height / thumb.h
+    var $img = $("<img />").addClass("thumbnail-img").attr("src", thumb.url)
+
+    // the container will contain the image positioned so that the correct sprite
+    // is visible
+    var $container = $("<div />").addClass("thumbnail-container")
+    $container.width(thumb.w * scaleFactor)
+    $container.height(height)
+    $img.css({
+      height: thumb.imageH * scaleFactor,
+      left: -1 * thumb.x * scaleFactor,
+      top: -1 * thumb.y * scaleFactor
+    })
+    $container.append($img)
+    return $container
   }
 
   _loadBackdrop() {
@@ -109,11 +141,10 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     }
 
     // append each of the thumbnails to the backdrop
-    var thumbs = this._getOptions().thumbs
-    for(let thumb of thumbs) {
-      let $img = $("<img />").attr("src", thumb.url).height(this._getOptions().thumbHeight)
+    for(let thumb of this._thumbs) {
+      let $img = this._buildImg(thumb, this._getOptions().backdropHeight)
       this._$backdropCarousel.append($img)
-      this._$thumbs.push($img)
+      this._$backdropCarouselImgs.push($img)
     }
   }
 
@@ -135,7 +166,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // slide the carousel so that the image on the carousel that is above where the person
     // is hovering maps to that position in time.
     // Thumbnails may not be distributed at even times along the video
-    var thumbs = this._getOptions().thumbs
+    var thumbs = this._thumbs
 
     // assuming that each thumbnail has the same width
     var thumbWidth = carouselWidth/thumbs.length
@@ -143,7 +174,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // determine which thumbnail applies to the current time
     var thumbIndex = this._getThumbIndexForTime(hoverTime)
     var thumb = thumbs[thumbIndex]
-    var thumbDuration = this._thumbDurations[thumbIndex]
+    var thumbDuration = thumb.duration
     if (thumbDuration === null) {
       // the last thumbnail duration will be null as it can't be determined
       // e.g the duration of the video may increase over time (live stream)
@@ -176,7 +207,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
       }
       // fade over the width of 1 thumbnail
       let opacity = Math.max(0.6 - (Math.abs(distance)/(1*thumbWidth)), 0.08)
-      this._$thumbs[i].css("opacity", opacity)
+      this._$backdropCarouselImgs[i].css("opacity", opacity)
     }
   }
 
@@ -193,10 +224,11 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
 
     // determine which thumbnail applies to the current time
     var thumbIndex = this._getThumbIndexForTime(hoverTime)
-    var thumb = thumbs[thumbIndex]
+    var thumb = this._thumbs[thumbIndex]
     
     // update thumbnail
-    this._$spotlightImg.attr("src", thumb.url)
+    this._$spotlight.empty()
+    this._$spotlight.append(this._buildImg(thumb, this._getOptions().spotlightHeight))
 
     var elWidth = this.$el.width()
     var thumbWidth = this._$spotlight.outerWidth()
@@ -212,6 +244,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   // returns the thumbnail which represents a time in the video
   // or null if there is no thumbnail that can represent the time
   _getThumbIndexForTime(time) {
+    var thumbs = this._thumbs
     for(let i=thumbs.length-1; i>=0; i--) {
       let thumb = thumbs[i]
       if (thumb.time <= time) {
@@ -251,8 +284,6 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     if (spotlightHeight) {
       this._$spotlight = $("<div />").addClass("spotlight")
       this._$spotlight.height(spotlightHeight)
-      this._$spotlightImg = $("<img />").height(spotlightHeight)
-      this._$spotlight.append(this._$spotlightImg)
       $(this.el).append(this._$spotlight)
     }
     this.$el.addClass("hidden")
