@@ -1,6 +1,6 @@
 [![npm version](https://badge.fury.io/js/clappr-thumbnails-plugin.svg)](https://badge.fury.io/js/clappr-thumbnails-plugin)
 # Clappr Thumbnails Plugin
-A plugin for clappr which will display thumbnails when hovering over the scrub bar.
+A plugin for clappr which will display thumbnails when hovering over the scrub bar. Thumbnails can either be individual images or a sprite sheet. You can find a tool which will generate a sprite sheet from a video [here](https://github.com/flavioribeiro/video-thumbnail-generator).
 
 ![Screenshot](screenshot.jpg)
 
@@ -37,6 +37,8 @@ var player = new Clappr.Player({
 ```
 
 `backdropHeight` and `spotlightHeight` are the heights that the thumbnails will be scaled to for the backdrop and spotlight respectively. Either of these can be `0` or `null` to disable them. The `thumbs` property is an array of all the thumbnails. The `time` property is the time in seconds that maps to the thumbnail image located at `url`.
+
+If you are using a sprite sheet you can use the helper method `ClapprThumbnailsPlugin.buildSpriteConfig(spriteSheetUrl, numThumbs, thumbWidth, thumbHeight, numColumns, timeInterval)` which will generate the object for the `thumbs` property for you.
 
 **The thumbnails must appear in the array in ascending time order.**
 

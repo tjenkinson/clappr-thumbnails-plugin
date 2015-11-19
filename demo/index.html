@@ -14,6 +14,22 @@
       });
     }
 
+    /* 
+     * The following shows how to use the plugin with a sprite sheet instead of individual images
+     * Here is a tool which lets you easily create a sprite sheet from a video: https://github.com/flavioribeiro/video-thumbnail-generator
+     *
+     
+    var spriteSheetUrl = "http://example.com/sprite.jpg";
+    var numThumbs = 100;
+    var thumbWidth = 160;
+    var thumbHeight = 90;
+    var numColumns = 10;
+    var timeInterval = 2.5;
+
+    var thumbs = ClapprThumbnailsPlugin.buildSpriteConfig(spriteSheetUrl, numThumbs, thumbWidth, thumbHeight, numColumns, timeInterval);
+
+    */
+
     var player = new Clappr.Player({
     	source: "http://tjenkinson.me/clappr-thumbnails-plugin/assets/video.mp4",
     	parentId: "#player",
@@ -26,5 +42,6 @@
         thumbs: thumbs
       }
     });
+
   </script>
 </body>
