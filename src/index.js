@@ -11,6 +11,33 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     }
   }
 
+  /* 
+   * Helper to build the "thumbs" property for a sprite sheet.
+   *
+   * spriteSheetUrl- The url to the sprite sheet image
+   * numThumbs- The number of thumbnails on the sprite sheet
+   * thumbWidth- The width of each thumbnail.
+   * thumbHeight- The height of each thumbnail.
+   * numColumns- The number of columns in the sprite sheet.
+   * timeInterval- The interval (in seconds) between the thumbnails.
+   * startTime- The time (in seconds) that the first thumbnail represents. (defaults to 0)
+   */
+  static buildSpriteConfig(spriteSheetUrl, numThumbs, thumbWidth, thumbHeight, numColumns, timeInterval, startTime) {
+    startTime = startTime || 0
+    var thumbs = []
+    for(let i=0; i<numThumbs; i++) {
+      thumbs.push({
+        url: spriteSheetUrl,
+        time: startTime+(i*timeInterval),
+        w: thumbWidth,
+        h: thumbHeight,
+        x: (i%numColumns) * thumbWidth,
+        y: Math.floor(i/numColumns) * thumbHeight
+      })
+    }
+    return thumbs
+  }
+
   constructor(core) {
     super(core)
     this._loaded = false
@@ -71,6 +98,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   // download all the thumbnails
   _loadThumbnails(onLoaded) {
     var thumbs = this._getOptions().thumbs
+    var cachedImageUrls = []
     var thumbsToLoad = thumbs.length
     if (thumbsToLoad === 0) {
       onLoaded()
@@ -91,7 +119,11 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
 
       let onImgLoaded = () => {
         // put image in dom to prevent browser removing it from cache
-        this._$imageCache.append($img)
+        if (cachedImageUrls.indexOf(thumb.url) === -1) {
+          // not been cached
+          this._$imageCache.append($img)
+          cachedImageUrls.push(thumb.url)
+        }
         let imageW = $img[0].width
         let imageH = $img[0].height
         this._thumbs[i] = {
@@ -205,8 +237,8 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
         // be 0
         distance = Math.min(0, distance+thumbWidth)
       }
-      // fade over the width of 1 thumbnail
-      let opacity = Math.max(0.6 - (Math.abs(distance)/(1*thumbWidth)), 0.08)
+      // fade over the width of 2 thumbnails
+      let opacity = Math.max(0.6 - (Math.abs(distance)/(2*thumbWidth)), 0.08)
       this._$backdropCarouselImgs[i].css("opacity", opacity)
     }
   }
