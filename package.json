@@ -2,7 +2,7 @@
   "name": "clappr-thumbnails-plugin",
   "version": "3.0.0",
   "description": "A plugin for clappr which will display thumbnails when hovering over the scrub bar.",
-  "main": "src/index.js",
+  "main": "dist/clappr-thumbnails-plugin.js",
   "scripts": {
     "build": "./node_modules/.bin/webpack",
     "release": "./node_modules/.bin/webpack -p"
