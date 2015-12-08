@@ -54,6 +54,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   bindEvents() {
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSEMOVE_SEEKBAR, this._onMouseMove)
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSELEAVE_SEEKBAR, this._onMouseLeave)
+    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_RENDERED, this._onMediaControlRendered)
   }
 
   _init() {
@@ -76,6 +77,10 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   _appendElToMediaControl() {
     // insert after the background
     this.core.mediaControl.$el.find(".media-control-background").first().after(this.el)
+  }
+
+  _onMediaControlRendered() {
+    this._appendElToMediaControl()
   }
 
   _onMouseMove(e) {
