@@ -84,7 +84,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   _onMouseMove(e) {
-    this._calculateHoverPosition(event)
+    this._calculateHoverPosition(e)
     this._show = true
     this._renderPlugin()
   }
