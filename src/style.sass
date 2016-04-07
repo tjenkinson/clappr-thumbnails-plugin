@@ -1,64 +1,55 @@
-@import "compass/css3";
+@import compass/css3
 
-.scrub-thumbnails {
-	position: absolute;
-	bottom: 55px;
-	width: 100%;
+.scrub-thumbnails
+  position: absolute
+  bottom: 55px
+  width: 100%
 
-	@include transition(opacity 0.3s ease);
-	
-	&.hidden {
-		opacity: 0;
-	}
+  +transition(opacity 0.3s ease)
 
-	.image-cache {
-		display: none;
-	}
+  &.hidden
+    opacity: 0
 
-	.thumbnail-container {
-		display: inline-block;
-		position: relative;
-		overflow: hidden;
-		background-color: #000000;
+  .image-cache
+    display: none
 
-		.thumbnail-img {
-			position: absolute;
-			width: auto;
-		}
-	}
+  .thumbnail-container
+    display: inline-block
+    position: relative
+    overflow: hidden
+    background-color: #000000
 
-	.spotlight {
-		background-color: #000000;
-		overflow: hidden;
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		border-color: #ffffff;
-		border-style: solid;
-		border-width: 2px;
+    .thumbnail-img
+      position: absolute
+      width: auto
 
-		img {
-			width: auto;
-		}
-	}
+  .spotlight
+    background-color: #000000
+    overflow: hidden
+    position: absolute
+    bottom: 0
+    left: 0
+    border-color: #ffffff
+    border-style: solid
+    border-width: 2px
 
-	.backdrop {
-		position: absolute;
-		left: 0;
-		bottom: 0;
-		right: 0;
-		background-color: #000000;
-		overflow: hidden;
+    img
+      width: auto
 
-		.carousel {
-			position: absolute;
-			top: 0;
-			left: 0;
-			height: 100%;
-			white-space: nowrap;
-			img {
-				width: auto;
-			}
-		}
-	}
-}
+  .backdrop
+    position: absolute
+    left: 0
+    bottom: 0
+    right: 0
+    background-color: #000000
+    overflow: hidden
+
+    .carousel
+      position: absolute
+      top: 0
+      left: 0
+      height: 100%
+      white-space: nowrap
+
+      img
+        width: auto
