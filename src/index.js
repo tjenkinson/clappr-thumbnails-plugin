@@ -178,7 +178,9 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     }
 
     // append each of the thumbnails to the backdrop
-    for(let thumb of this._thumbs) {
+    //for(let thumb of this._thumbs) {
+    for (let i=0; i<this._thumbs.length; i++) {
+      let thumb = this._thumbs[i]
       let $img = this._buildImg(thumb, this._getOptions().backdropHeight)
       this._$backdropCarousel.append($img)
       this._$backdropCarouselImgs.push($img)
