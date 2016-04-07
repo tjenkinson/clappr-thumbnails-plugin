@@ -1,6 +1,6 @@
 import {UICorePlugin, Events} from 'clappr'
 import $ from 'jquery'
-import './style.scss'
+import './style.sass'
 
 export default class ScrubThumbnailsPlugin extends UICorePlugin {
   get name() { return 'scrub-thumbnails' }
