@@ -11,7 +11,8 @@
   "license": "MIT",
   "repository": "tjenkinson/clappr-thumbnails-plugin",
   "dependencies": {
-    "clappr": "latest"
+    "clappr": "latest",
+    "clappr-zepto": "latest"
   },
   "devDependencies": {
     "babel-core": "^6.7.4",
@@ -21,7 +22,7 @@
     "clean-webpack-plugin": "^0.1.3",
     "compass-mixins": "^0.12.7",
     "css-loader": "^0.23.1",
-    "jquery": "^2.1.4",
+    "html-loader": "^0.3.0",
     "node-sass": "^3.3.3",
     "sass-loader": "^3.0.0",
     "style-loader": "^0.13.1",

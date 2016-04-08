@@ -11,6 +11,7 @@ module.exports = {
   plugins: plugins,
   externals: {
     clappr: 'Clappr',
+    "clappr-zepto": "clappr-zepto"
   },
   module: {
     loaders: [
@@ -23,7 +24,10 @@ module.exports = {
       },
       {
         test: /\.sass$/,
-        loaders: ['style', 'css', 'sass?includePaths[]=' + path.resolve(__dirname, "./node_modules/compass-mixins/lib")],
+        loaders: ['css', 'sass?includePaths[]=' + path.resolve(__dirname, "./node_modules/compass-mixins/lib")],
+      },
+      {
+        test: /\.html/, loader: 'html?minimize=false'
       },
     ],
   },
@@ -32,6 +36,7 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
+    publicPath: '<%=baseUrl%>/',
     filename: 'clappr-thumbnails-plugin.js',
     library: 'ClapprThumbnailsPlugin',
     libraryTarget: 'umd',

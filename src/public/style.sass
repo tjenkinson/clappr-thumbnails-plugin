@@ -1,0 +1,55 @@
+@import compass/css3
+
+.scrub-thumbnails
+  position: absolute
+  bottom: 55px
+  width: 100%
+
+  +transition(opacity 0.3s ease)
+
+  &.hidden
+    opacity: 0
+
+  .image-cache
+    display: none
+
+  .thumbnail-container
+    display: inline-block
+    position: relative
+    overflow: hidden
+    background-color: #000000
+
+    .thumbnail-img
+      position: absolute
+      width: auto
+
+  .spotlight
+    background-color: #000000
+    overflow: hidden
+    position: absolute
+    bottom: 0
+    left: 0
+    border-color: #ffffff
+    border-style: solid
+    border-width: 2px
+
+    img
+      width: auto
+
+  .backdrop
+    position: absolute
+    left: 0
+    bottom: 0
+    right: 0
+    background-color: #000000
+    overflow: hidden
+
+    .carousel
+      position: absolute
+      top: 0
+      left: 0
+      height: 100%
+      white-space: nowrap
+
+      img
+        width: auto
