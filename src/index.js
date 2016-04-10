@@ -59,7 +59,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // each element is {x, y, w, h, imageW, imageH, url, time, duration}
     // one entry for each thumbnail
     this._thumbs = []
-    // Init variables as array to add in DOM on render()
+    // Init the backdropCarousel as array to keep reference of thumbnail images
     this._$backdropCarousel = []
     // Load thumbs
     this._loadThumbs()
@@ -88,7 +88,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   _onMediaControlRendered() {
-    this._render()
+    this._createElements()
     this._init()
   }
 
@@ -323,7 +323,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     }
   }
 
-  _render() {
+  _createElements() {
     this.$el.html(this.template({'backdropHeight':this._getOptions().backdropHeight, 'spotlightHeight': this._getOptions().spotlightHeight}))
     this.$el.append(Styler.getStyleFor(pluginStyle))
     this.$el.addClass("hidden")
