@@ -1,5 +1,4 @@
-import {UICorePlugin, Styler, Events, template} from 'clappr'
-import $ from '../lib/zepto'
+import {UICorePlugin, Styler, Events, template, $} from 'clappr'
 import pluginHtml from './public/scrub-thumbnails.html'
 import pluginStyle from './public/style.sass'
 
