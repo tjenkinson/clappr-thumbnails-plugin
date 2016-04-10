@@ -10,8 +10,7 @@ module.exports = {
   entry: path.resolve(__dirname, 'src/index.js'),
   plugins: plugins,
   externals: {
-    clappr: 'Clappr',
-    "clappr-zepto": "clappr-zepto"
+    clappr: 'Clappr'
   },
   module: {
     loaders: [
@@ -36,7 +35,6 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    publicPath: '<%=baseUrl%>/',
     filename: 'clappr-thumbnails-plugin.js',
     library: 'ClapprThumbnailsPlugin',
     libraryTarget: 'umd',
