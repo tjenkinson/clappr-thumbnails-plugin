@@ -1,4 +1,5 @@
 import {UICorePlugin, Styler, Events, template} from 'clappr'
+import $ from '../lib/zepto'
 import pluginHtml from './public/scrub-thumbnails.html'
 import pluginStyle from './public/style.sass'
 
@@ -7,8 +8,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
 
   get attributes() {
     return {
-      'class': this.name,
-      'data-scrub-thumbnails': ''
+      'class': this.name
     }
   }
   get template() { return template(pluginHtml) }
@@ -60,7 +60,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // one entry for each thumbnail
     this._thumbs = []
     // Init the backdropCarousel as array to keep reference of thumbnail images
-    this._$backdropCarousel = []
+    this._$backdropCarouselImgs = []
     // Load thumbs
     this._loadThumbs()
   }
@@ -112,7 +112,6 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   // download all the thumbnails
   _loadThumbnails(onLoaded) {
     var thumbs = this._getOptions().thumbs
-    var cachedImageUrls = []
     var thumbsToLoad = thumbs.length
     if (thumbsToLoad === 0) {
       onLoaded()
@@ -149,11 +148,6 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
           onLoaded()
         }
       }
-      // put image in dom to prevent browser removing it from cache
-      if (cachedImageUrls.indexOf(thumb.url) === -1) {
-        // not been cached
-        cachedImageUrls.push(thumb.url)
-      }
       img.onload = onImgLoaded
       img.src = thumb.url
     }
@@ -186,11 +180,11 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     }
 
     // append each of the thumbnails to the backdrop carousel
-    let $carousel = this.$el.find('[data-backdrop-carousel]')
+    let $carousel = this._$carousel
     for (let i=0; i<this._thumbs.length; i++) {
       let $img = this._buildImg(this._thumbs[i], this._getOptions().backdropHeight)
       // Keep reference to thumbnail
-      this._$backdropCarousel.push($img)
+      this._$backdropCarouselImgs.push($img)
       // Add thumbnail to DOM
       $carousel.append($img) 
     }
@@ -208,9 +202,9 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     var videoDuration = this.core.mediaControl.container.getDuration()
     // the time into the video at the current hover position
     var hoverTime = videoDuration * hoverPosition
-    var backdropWidth = this.$el.find('[data-backdrop]').width()
-    var carousel = this.$el.find('[data-backdrop-carousel]')
-    var carouselWidth = carousel.width()
+    var backdropWidth = this._$backdrop.width()
+    var $carousel = this._$carousel
+    var carouselWidth = $carousel.width()
 
     // slide the carousel so that the image on the carousel that is above where the person
     // is hovering maps to that position in time.
@@ -241,7 +235,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // and finally the position of the carousel when the hover position is taken in to consideration
     var carouselXCoord = xCoordInCarousel - (hoverPosition*backdropWidth)
     
-    carousel.css("left", -carouselXCoord)
+    $carousel.css("left", -carouselXCoord)
 
     // now update the transparencies so that they fade in around the active one
     for(let i=0; i<thumbs.length; i++) {
@@ -256,7 +250,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
       }
       // fade over the width of 2 thumbnails
       let opacity = Math.max(0.6 - (Math.abs(distance)/(2*thumbWidth)), 0.08)
-      this._$backdropCarousel[i].css("opacity", opacity)
+      this._$backdropCarouselImgs[i].css("opacity", opacity)
     }
   }
 
@@ -276,23 +270,19 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     var thumb = this._thumbs[thumbIndex]
     
     // update thumbnail
-    //this._$spotlight.empty()
-    //this._$spotlight.append(this._buildImg(thumb, this._getOptions().spotlightHeight))
-    var spotlight = this.$el.find('[data-spotlight]')
-    spotlight.empty()
-    spotlight.append(this._buildImg(thumb, this._getOptions().spotlightHeight))
+    var $spotlight = this._$spotlight
+    $spotlight.empty()
+    $spotlight.append(this._buildImg(thumb, this._getOptions().spotlightHeight))
 
     var elWidth = this.$el.width()
-    //var thumbWidth = this._$spotlight.width()
-    var thumbWidth = spotlight.width()
+    var thumbWidth = $spotlight.width()
 
     var spotlightXPos = (elWidth * hoverPosition) - (thumbWidth / 2)
     
     // adjust so the entire thumbnail is always visible
     spotlightXPos = Math.max(Math.min(spotlightXPos, elWidth - thumbWidth), 0)
 
-    //this._$spotlight.css("left", spotlightXPos)
-    spotlight.css("left", spotlightXPos)
+    $spotlight.css("left", spotlightXPos)
   }
 
   // returns the thumbnail which represents a time in the video
@@ -324,8 +314,12 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   _createElements() {
-    this.$el.html(this.template({'backdropHeight':this._getOptions().backdropHeight, 'spotlightHeight': this._getOptions().spotlightHeight}))
+    this.$el.html(this.template({'backdropHeight':this._getOptions().backdropHeight, 'spotlightHeight':this._getOptions().spotlightHeight}))
     this.$el.append(Styler.getStyleFor(pluginStyle))
+    // cache dom references
+    this._$spotlight = this.$el.find(".spotlight")
+    this._$backdrop = this.$el.find(".backdrop")
+    this._$carousel = this._$backdrop.find(".carousel")
     this.$el.addClass("hidden")
     this._appendElToMediaControl()
     return this
