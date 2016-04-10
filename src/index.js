@@ -322,6 +322,5 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this._$carousel = this._$backdrop.find(".carousel")
     this.$el.addClass("hidden")
     this._appendElToMediaControl()
-    return this
   }
 }
