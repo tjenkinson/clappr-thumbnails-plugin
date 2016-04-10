@@ -10,7 +10,7 @@ Add both Clappr and the thumbnails plugin scripts to your HTML:
 ```html
 <head>
   <script type="text/javascript" src="http://cdn.clappr.io/latest/clappr.min.js"></script>
-  <script type="text/javascript" src="dist/clappr-thumbnails-plugin.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/clappr.thumbnails-plugin/latest/clappr-thumbnails-plugin.js"></script>
 </head>
 ```
 
