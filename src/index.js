@@ -162,8 +162,8 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // the container will contain the image positioned so that the correct sprite
     // is visible
     var $container = $("<div />").addClass("thumbnail-container")
-    $container.width(thumb.w * scaleFactor)
-    $container.height(height)
+    $container.css("width", thumb.w * scaleFactor)
+    $container.css("height", height)
     $img.css({
       height: thumb.imageH * scaleFactor,
       left: -1 * thumb.x * scaleFactor,
