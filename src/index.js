@@ -41,37 +41,41 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
 
   constructor(core) {
     super(core)
-    this._init()
-  }
 
-  bindEvents() {
-    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSEMOVE_SEEKBAR, this._onMouseMove)
-    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSELEAVE_SEEKBAR, this._onMouseLeave)
-    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_RENDERED, this._onMediaControlRendered)
-  }
-
-  _init() {
-    this._loaded = false
+    this._thumbsLoaded = false
     this._show = false
     // proportion into seek bar that the user is hovered over 0-1
     this._hoverPosition = 0
     // each element is {x, y, w, h, imageW, imageH, url, time, duration}
     // one entry for each thumbnail
     this._thumbs = []
-    // Init the backdropCarousel as array to keep reference of thumbnail images
-    this._$backdropCarouselImgs = []
-    // Load thumbs
-    this._loadThumbs()
-  }
 
-  _loadThumbs() {
-    // preload all the thumbnails in the browser
+    // Load thumbs
     this._loadThumbnails(() => {
       // all thumbnails now preloaded
-      this._loadBackdrop()
-      this._loaded = true
-      this._renderPlugin()
+      this._thumbsLoaded = true
+      this._init()
     })
+  }
+
+  bindEvents() {
+    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSEMOVE_SEEKBAR, this._onMouseMove)
+    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSELEAVE_SEEKBAR, this._onMouseLeave)
+    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_RENDERED, this._init)
+  }
+
+  _init() {
+    if (!this._thumbsLoaded) {
+      // _init() will be called when the thumbs are loaded,
+      // and whenever the media control rendered event is fired as just before this the dom elements get wiped in IE (https://github.com/tjenkinson/clappr-thumbnails-plugin/issues/5)
+      return
+    }
+    // Init the backdropCarousel as array to keep reference of thumbnail images
+    this._$backdropCarouselImgs = []
+    // create/recreate the dom elements for the plugin
+    this._createElements()
+    this._loadBackdrop()
+    this._renderPlugin()
   }
 
   _getOptions() {
@@ -84,11 +88,6 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   _appendElToMediaControl() {
     // insert after the background
     this.core.mediaControl.$el.find(".media-control-background").first().after(this.el)
-  }
-
-  _onMediaControlRendered() {
-    this._createElements()
-    this._init()
   }
 
   _onMouseMove(e) {
@@ -299,7 +298,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
   }
 
   _renderPlugin() {
-    if (!this._loaded) {
+    if (!this._thumbsLoaded) {
       return
     }
     if (this._show && this._getOptions().thumbs.length > 0) {
