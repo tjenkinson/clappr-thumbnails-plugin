@@ -235,6 +235,9 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     
     $carousel.css("left", -carouselXCoord)
 
+    var maxOpacity = this._getOptions().backdropMaxOpacity || 0.6;
+    var minOpacity = this._getOptions().backdropMinOpacity || 0.08;
+
     // now update the transparencies so that they fade in around the active one
     for(let i=0; i<thumbs.length; i++) {
       let thumbXCoord = thumbWidth * i
@@ -247,7 +250,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
         distance = Math.min(0, distance+thumbWidth)
       }
       // fade over the width of 2 thumbnails
-      let opacity = Math.max(0.6 - (Math.abs(distance)/(2*thumbWidth)), 0.08)
+      let opacity = Math.max(maxOpacity - (Math.abs(distance)/(2*thumbWidth)), minOpacity)
       this._$backdropCarouselImgs[i].css("opacity", opacity)
     }
   }
