@@ -1,4 +1,5 @@
 import {UICorePlugin, Styler, Events, template, $} from 'clappr'
+import {Promise} from 'es6-promise-polyfill'
 import pluginHtml from './public/scrub-thumbnails.html'
 import pluginStyle from './public/style.sass'
 
@@ -39,22 +40,28 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     return thumbs
   }
 
+  // TODO check if seek enabled
+
   constructor(core) {
     super(core)
-
     this._thumbsLoaded = false
     this._show = false
     // proportion into seek bar that the user is hovered over 0-1
     this._hoverPosition = 0
-    // each element is {x, y, w, h, imageW, imageH, url, time, duration}
+    this._oldContainer = null
+    // each element is {x, y, w, h, imageW, imageH, url, time, duration, src}
     // one entry for each thumbnail
     this._thumbs = []
-
-    // Load thumbs
-    this._loadThumbnails(() => {
-      // all thumbnails now preloaded
+    // a promise that will be resolved when thumbs have loaded
+    this._onThumbsLoaded =  new Promise((resolve) => {
+      this._onThumbsLoadedResolve = resolve
+    })
+    this._buildThumbsFromOptions().then(() => {
       this._thumbsLoaded = true
+      this._onThumbsLoadedResolve()
       this._init()
+    }).catch((err) => {
+      throw err
     })
   }
 
@@ -62,6 +69,64 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSEMOVE_SEEKBAR, this._onMouseMove)
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSELEAVE_SEEKBAR, this._onMouseLeave)
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_RENDERED, this._init)
+    this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_CONTAINERCHANGED, this._onMediaControlContainerChanged)
+  }
+
+  _bindContainerEvents() {
+    if (this._oldContainer) {
+      this.stopListening(this._oldContainer, Events.CONTAINER_TIMEUPDATE, this._renderPlugin)
+    }
+    this._oldContainer = this.core.mediaControl.container
+    this.listenTo(this.core.mediaControl.container, Events.CONTAINER_TIMEUPDATE, this._renderPlugin)
+  }
+
+  _onMediaControlContainerChanged() {
+    this._bindContainerEvents()
+  }
+
+  addThumbnail(thumbSrc) {
+    return this._onThumbsLoaded.then(() => {
+      this._addThumbFromSrc(thumbSrc).then((thumb) => {
+        if (this._getOptions().backdropHeight) {
+          // append thumb to backdrop
+          var index = this._thumbs.indexOf(thumb)
+          var $img = this._buildImg(thumb, this._getOptions().backdropHeight)
+          // Add thumbnail reference
+          this._$backdropCarouselImgs.splice(index, 0, $img)
+          // Add thumbnail to DOM
+          if (this._$backdropCarouselImgs.length === 1) {
+            this._$carousel.append($img) 
+          }
+          else if (index === 0) {
+            this._$backdropCarouselImgs[1].before($img)
+          }
+          else {
+            this._$backdropCarouselImgs[index-1].after($img)
+          }
+          this._renderPlugin()
+        }
+      })
+    }) 
+  }
+
+  // provide a reference to the thumb object you provided to remove it
+  removeThumbnail(thumbSrc) {
+    return this._onThumbsLoaded.then(() => {
+      var found = this._thumbs.some((thumb, i) => {
+        if (thumb.src === thumbSrc) {
+          this._thumbs.splice(i, 1)
+          if (this._getOptions().backdropHeight) {
+            // remove image from carousel
+            this._$backdropCarouselImgs[i].remove()
+            this._$backdropCarouselImgs.splice(i, 1)
+          }
+          this._renderPlugin()
+          return true
+        }
+        return false
+      })
+      return Promise.resolve(found)
+    })
   }
 
   _init() {
@@ -107,48 +172,63 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this._hoverPosition = Math.min(1, Math.max(offset/this.core.mediaControl.$seekBarContainer.width(), 0))
   }
 
-  // download all the thumbnails
-  _loadThumbnails(onLoaded) {
+  _buildThumbsFromOptions() {
     var thumbs = this._getOptions().thumbs
-    var thumbsToLoad = thumbs.length
-    if (thumbsToLoad === 0) {
-      onLoaded()
-      return
-    }
+    var promises = thumbs.map((thumb) => {
+      return this._addThumbFromSrc(thumb)
+    })
+    return Promise.all(promises)
+  }
 
-    for(let i=0; i<thumbs.length; i++) {
-      let thumb = thumbs[i]
-      this._thumbs.push(null)
+  _addThumbFromSrc(thumbSrc) {
+    return new Promise((resolve, reject) => {
+      var img = new Image()
+      img.onload = () => {
+        resolve(img)
+      }
+      img.onerror = reject
+      img.src = thumbSrc.url
+    }).then((img) => {
+      var startTime = thumbSrc.time
+      // determine the thumb index
+      var index = null
+      this._thumbs.some((thumb, i) => {
+        if (startTime < thumb.time) {
+          index = i
+          return true
+        }
+        return false
+      })
+      if (index === null) {
+        index = this._thumbs.length
+      }
 
-      let next = i<thumbs.length-1 ? thumbs[i+1] : null
+      var next = index < this._thumbs.length-1 ? this._thumbs[index+1] : null
+      var prev = index > 0 ? this._thumbs[index-1] : null
+      if (prev) {
+        // update the duration of the previous thumbnail
+        prev.duration = startTime - prev.time
+      }
       // the duration this thumb lasts for
       // if it is the last thumb then duration will be null
-      let duration = next ? next.time - thumb.time : null
-
-      // preload each thumbnail
-      let img = new Image()
-      let onImgLoaded = () => {
-        let imageW = img.width
-        let imageH = img.height
-        this._thumbs[i] = {
-          imageW: imageW, // actual width of image
-          imageH: imageH, // actual height of image
-          x: thumb.x || 0, // x coord in image of sprite
-          y: thumb.y || 0, // y coord in image of sprite
-          w: thumb.w || imageW, // width of sprite
-          h: thumb.h || imageH, // height of sprite
-          url: thumb.url,
-          time: thumb.time, // time this thumb represents
-          duration: duration // how long (from time) this thumb represents
-        }
-
-        if (--thumbsToLoad === 0) {
-          onLoaded()
-        }
+      var duration = next ? next.time - thumbSrc.time : null
+      var imageW = img.width
+      var imageH = img.height
+      var thumb = {
+        imageW: imageW, // actual width of image
+        imageH: imageH, // actual height of image
+        x: thumbSrc.x || 0, // x coord in image of sprite
+        y: thumbSrc.y || 0, // y coord in image of sprite
+        w: thumbSrc.w || imageW, // width of sprite
+        h: thumbSrc.h || imageH, // height of sprite
+        url: thumbSrc.url,
+        time: startTime, // time this thumb represents
+        duration: duration, // how long (from time) this thumb represents
+        src: thumbSrc
       }
-      img.onload = onImgLoaded
-      img.src = thumb.url
-    }
+      this._thumbs.splice(index, 0, thumb)
+      return thumb
+    })
   }
 
   // builds a dom element which represents the thumbnail
@@ -198,8 +278,9 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
 
     var hoverPosition = this._hoverPosition
     var videoDuration = this.core.mediaControl.container.getDuration()
+    var startTimeOffset = this.core.mediaControl.container.getStartTimeOffset()
     // the time into the video at the current hover position
-    var hoverTime = videoDuration * hoverPosition
+    var hoverTime = startTimeOffset + (videoDuration * hoverPosition)
     var backdropWidth = this._$backdrop.width()
     var $carousel = this._$carousel
     var carouselWidth = $carousel.width()
@@ -220,7 +301,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
       // the last thumbnail duration will be null as it can't be determined
       // e.g the duration of the video may increase over time (live stream)
       // so calculate the duration now so this last thumbnail lasts till the end
-      thumbDuration = Math.max(videoDuration - thumb.time, 0)
+      thumbDuration = Math.max(videoDuration + startTimeOffset - thumb.time, 0)
     }
 
     // determine how far accross that thumbnail we are
@@ -264,7 +345,8 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     var hoverPosition = this._hoverPosition
     var videoDuration = this.core.mediaControl.container.getDuration()
     // the time into the video at the current hover position
-    var hoverTime = videoDuration * hoverPosition
+    var startTimeOffset = this.core.mediaControl.container.getStartTimeOffset()
+    var hoverTime = startTimeOffset + (videoDuration * hoverPosition)
 
     // determine which thumbnail applies to the current time
     var thumbIndex = this._getThumbIndexForTime(hoverTime)
@@ -304,7 +386,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     if (!this._thumbsLoaded) {
       return
     }
-    if (this._show && this._getOptions().thumbs.length > 0) {
+    if (this._show && this._thumbs.length > 0) {
       this.$el.removeClass("hidden")
       this._updateCarousel()
       this._updateSpotlightThumb()

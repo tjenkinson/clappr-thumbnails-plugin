@@ -18,7 +18,7 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel',
         query: {
-            compact: true,
+          compact: true,
         }
       },
       {

@@ -40,7 +40,24 @@ var player = new Clappr.Player({
 
 If you are using a sprite sheet you can use the helper method `ClapprThumbnailsPlugin.buildSpriteConfig(spriteSheetUrl, numThumbs, thumbWidth, thumbHeight, numColumns, timeInterval)` which will generate the object for the `thumbs` property for you.
 
-**The thumbnails must appear in the array in ascending time order.**
+# Adding and Removing Thumbnails Dynamically
+You can add/remove thumbnails at any time using the `addThumbnail()` and `removeThumbnail()` methods as shown below.
+
+```javascript
+var thumbnailsPlugin = player.getPlugin("scrub-thumbnails");
+var newThumb = {
+  url: "http://tjenkinson.me/clappr-thumbnails-plugin/assets/thumbnails/thumb_10.jpg",
+  time: 12.5
+};
+
+thumbnailsPlugin.addThumbnail(newThumb).then(function() {
+  console.log("Thumbnail added.");
+}).then(function() {
+  thumbnailsPlugin.removeThumbnail(newThumb).then(function(success) {
+    console.log("Thumbnail removed.");
+  });
+});
+```
 
 # Demo
 To run the demo start a web server with the root directory being the root of this repo, and then browse to the "index.html" file in the "demo" folder.
