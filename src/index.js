@@ -203,7 +203,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
         index = this._thumbs.length
       }
 
-      var next = index < this._thumbs.length-1 ? this._thumbs[index+1] : null
+      var next = index < this._thumbs.length ? this._thumbs[index] : null
       var prev = index > 0 ? this._thumbs[index-1] : null
       if (prev) {
         // update the duration of the previous thumbnail
