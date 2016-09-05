@@ -41,7 +41,7 @@ var player = new Clappr.Player({
 If you are using a sprite sheet you can use the helper method `ClapprThumbnailsPlugin.buildSpriteConfig(spriteSheetUrl, numThumbs, thumbWidth, thumbHeight, numColumns, timeInterval)` which will generate the object for the `thumbs` property for you.
 
 # Adding and Removing Thumbnails Dynamically
-You can add/remove thumbnails at any time using the `addThumbnail()` and `removeThumbnail()` methods as shown below.
+You can add/remove thumbnails at any time using the `addThumbnail()` and `removeThumbnail()` methods as shown below. Both these methods will also take an array.
 
 ```javascript
 var thumbnailsPlugin = player.getPlugin("scrub-thumbnails");

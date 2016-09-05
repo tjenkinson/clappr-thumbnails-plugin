@@ -84,48 +84,70 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     this._bindContainerEvents()
   }
 
+  // thumbSrc may be an array to add multiple
   addThumbnail(thumbSrc) {
+    var thumbSrcs = thumbSrc.constructor === Array ? thumbSrc : [thumbSrc]
     return this._onThumbsLoaded.then(() => {
-      this._addThumbFromSrc(thumbSrc).then((thumb) => {
-        if (this._getOptions().backdropHeight) {
-          // append thumb to backdrop
-          var index = this._thumbs.indexOf(thumb)
-          var $img = this._buildImg(thumb, this._getOptions().backdropHeight)
-          // Add thumbnail reference
-          this._$backdropCarouselImgs.splice(index, 0, $img)
-          // Add thumbnail to DOM
-          if (this._$backdropCarouselImgs.length === 1) {
-            this._$carousel.append($img) 
+      var promises = thumbSrcs.map((a) => {
+        return this._addThumbFromSrc(a).then((thumb) => {
+            if (this._getOptions().backdropHeight) {
+              // append thumb to backdrop
+              var index = this._thumbs.indexOf(thumb)
+              var $img = this._buildImg(thumb, this._getOptions().backdropHeight)
+              // Add thumbnail reference
+              this._$backdropCarouselImgs.splice(index, 0, $img)
+              // Add thumbnail to DOM
+              if (this._$backdropCarouselImgs.length === 1) {
+                this._$carousel.append($img) 
+              }
+              else if (index === 0) {
+                this._$backdropCarouselImgs[1].before($img)
+              }
+              else {
+                this._$backdropCarouselImgs[index-1].after($img)
+              }
+            }
+        })
+      })
+      return Promise.all(promises).then(() => {
+          if (promises.length > 0) {
+            this._renderPlugin()
           }
-          else if (index === 0) {
-            this._$backdropCarouselImgs[1].before($img)
-          }
-          else {
-            this._$backdropCarouselImgs[index-1].after($img)
-          }
-          this._renderPlugin()
-        }
       })
     }) 
   }
 
   // provide a reference to the thumb object you provided to remove it
+  // thumbSrc may be an array to remove multiple
   removeThumbnail(thumbSrc) {
+    var thumbSrcs = thumbSrc.constructor === Array ? thumbSrc : [thumbSrc]
     return this._onThumbsLoaded.then(() => {
-      var found = this._thumbs.some((thumb, i) => {
-        if (thumb.src === thumbSrc) {
-          this._thumbs.splice(i, 1)
-          if (this._getOptions().backdropHeight) {
-            // remove image from carousel
-            this._$backdropCarouselImgs[i].remove()
-            this._$backdropCarouselImgs.splice(i, 1)
+      var foundAll = true
+      var foundOne = false
+      thumbSrcs.forEach((a) => {
+        var found = this._thumbs.some((thumb, i) => {
+          if (thumb.src === a) {
+            this._thumbs.splice(i, 1)
+            if (this._getOptions().backdropHeight) {
+              // remove image from carousel
+              this._$backdropCarouselImgs[i].remove()
+              this._$backdropCarouselImgs.splice(i, 1)
+            }
+            return true
           }
-          this._renderPlugin()
-          return true
+          return false
+        })
+        if (!found) {
+          foundAll = false
         }
-        return false
+        else {
+          foundOne = true
+        }
       })
-      return Promise.resolve(found)
+      if (foundOne) {
+        this._renderPlugin()
+      }
+      return Promise.resolve(foundAll)
     })
   }
 
