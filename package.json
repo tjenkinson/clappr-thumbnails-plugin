@@ -1,6 +1,6 @@
 {
   "name": "clappr-thumbnails-plugin",
-  "version": "3.5.1",
+  "version": "3.6.0",
   "description": "A plugin for clappr which will display thumbnails when hovering over the scrub bar.",
   "main": "dist/clappr-thumbnails-plugin.js",
   "scripts": {
