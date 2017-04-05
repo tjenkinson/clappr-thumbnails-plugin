@@ -24,6 +24,6 @@
     "node-sass": "~3.8.0",
     "sass-loader": "^4.0.0",
     "style-loader": "^0.13.1",
-    "webpack": "^1.12.2"
+    "webpack": "^1.13.1"
   }
 }
