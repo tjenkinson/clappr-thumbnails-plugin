@@ -21,9 +21,12 @@
     "css-loader": "^0.24.0",
     "es6-promise-polyfill": "^1.2.0",
     "html-loader": "^0.4.3",
-    "node-sass": "~3.8.0",
+    "node-sass": "^4.11.0",
     "sass-loader": "^4.0.0",
     "style-loader": "^0.13.1",
     "webpack": "^1.12.2"
+  },
+  "dependencies": {
+    "npm": "^6.7.0"
   }
 }
