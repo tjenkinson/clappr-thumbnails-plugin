@@ -62,7 +62,7 @@ thumbnailsPlugin.addThumbnail(newThumb).then(function() {
 # Demo
 To run the demo start a web server with the root directory being the root of this repo, and then browse to the "index.html" file in the "demo" folder.
 
-I am also hosting a demo at http://tjenkinson.me/clappr-thumbnails-plugin/
+Or load the version on github pages: https://tjenkinson.github.io/clappr-thumbnails-plugin/demo/
 
 # Development
 Install dependencies:
