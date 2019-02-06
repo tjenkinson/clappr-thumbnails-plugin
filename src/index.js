@@ -67,7 +67,9 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
 
   bindEvents() {
     // Clappr 0.3 support
-    this.listenTo(this.core, Events.CORE_ACTIVE_CONTAINER_CHANGED, this.rebindEvents)
+    if (Events.CORE_ACTIVE_CONTAINER_CHANGED) {
+      this.listenTo(this.core, Events.CORE_ACTIVE_CONTAINER_CHANGED, this.rebindEvents)
+    }
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSEMOVE_SEEKBAR, this._onMouseMove)
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_MOUSELEAVE_SEEKBAR, this._onMouseLeave)
     this.listenTo(this.core.mediaControl, Events.MEDIACONTROL_RENDERED, this._init)
