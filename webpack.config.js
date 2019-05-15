@@ -10,7 +10,12 @@ module.exports = {
   entry: path.resolve(__dirname, 'src/index.js'),
   plugins: plugins,
   externals: {
-    clappr: 'Clappr'
+    clappr: {
+      amd: 'clappr',
+      commonjs: 'clappr',
+      commonjs2: 'clappr',
+      root: 'Clappr'
+    }
   },
   module: {
     loaders: [
