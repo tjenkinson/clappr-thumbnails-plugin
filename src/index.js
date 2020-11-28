@@ -52,6 +52,7 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // each element is {x, y, w, h, imageW, imageH, url, time, duration, src}
     // one entry for each thumbnail
     this._thumbs = []
+    this._spotlightThumb = null
     // a promise that will be resolved when thumbs have loaded
     this._onThumbsLoaded =  new Promise((resolve) => {
       this._onThumbsLoadedResolve = resolve
@@ -383,10 +384,13 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     var thumbIndex = this._getThumbIndexForTime(hoverTime)
     var thumb = this._thumbs[thumbIndex]
     
-    // update thumbnail
-    var $spotlight = this._$spotlight
-    $spotlight.empty()
-    $spotlight.append(this._buildImg(thumb, this._getOptions().spotlightHeight))
+    if (this._spotlightThumb !== thumb) {
+      // update thumbnail
+      var $spotlight = this._$spotlight
+      $spotlight.empty()
+      $spotlight.append(this._buildImg(thumb, this._getOptions().spotlightHeight))
+      this._spotlightThumb = thumb;
+    }
 
     var elWidth = this.$el.width()
     var thumbWidth = $spotlight.width()
