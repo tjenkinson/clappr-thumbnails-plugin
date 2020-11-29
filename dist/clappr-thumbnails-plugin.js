@@ -127,8 +127,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var opacity=Math.max(maxOpacity-Math.abs(distance)/(2*thumbWidth),minOpacity);this._$backdropCarouselImgs[i].css("opacity",opacity);}}},{key:'_updateSpotlightThumb',value:function _updateSpotlightThumb(){if(!this._getOptions().spotlightHeight){// disabled
 	return;}var hoverPosition=this._hoverPosition;var videoDuration=this.core.mediaControl.container.getDuration();// the time into the video at the current hover position
 	var startTimeOffset=this.core.mediaControl.container.getStartTimeOffset();var hoverTime=startTimeOffset+videoDuration*hoverPosition;// determine which thumbnail applies to the current time
-	var thumbIndex=this._getThumbIndexForTime(hoverTime);var thumb=this._thumbs[thumbIndex];if(this._spotlightThumb!==thumb){// update thumbnail
-	var $spotlight=this._$spotlight;$spotlight.empty();$spotlight.append(this._buildImg(thumb,this._getOptions().spotlightHeight));this._spotlightThumb=thumb;}var elWidth=this.$el.width();var thumbWidth=$spotlight.width();var spotlightXPos=elWidth*hoverPosition-thumbWidth/2;// adjust so the entire thumbnail is always visible
+	var thumbIndex=this._getThumbIndexForTime(hoverTime);var thumb=this._thumbs[thumbIndex];var $spotlight=this._$spotlight;if(this._spotlightThumb!==thumb){// update thumbnail
+	$spotlight.empty();$spotlight.append(this._buildImg(thumb,this._getOptions().spotlightHeight));this._spotlightThumb=thumb;}var elWidth=this.$el.width();var thumbWidth=$spotlight.width();var spotlightXPos=elWidth*hoverPosition-thumbWidth/2;// adjust so the entire thumbnail is always visible
 	spotlightXPos=Math.max(Math.min(spotlightXPos,elWidth-thumbWidth),0);$spotlight.css("left",spotlightXPos);}// returns the thumbnail which represents a time in the video
 	// or null if there is no thumbnail that can represent the time
 	},{key:'_getThumbIndexForTime',value:function _getThumbIndexForTime(time){var thumbs=this._thumbs;for(var i=thumbs.length-1;i>=0;i--){var thumb=thumbs[i];if(thumb.time<=time){return i;}}// stretch the first thumbnail back to the start
