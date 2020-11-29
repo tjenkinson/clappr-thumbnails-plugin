@@ -383,10 +383,10 @@ export default class ScrubThumbnailsPlugin extends UICorePlugin {
     // determine which thumbnail applies to the current time
     var thumbIndex = this._getThumbIndexForTime(hoverTime)
     var thumb = this._thumbs[thumbIndex]
+    var $spotlight = this._$spotlight
     
     if (this._spotlightThumb !== thumb) {
       // update thumbnail
-      var $spotlight = this._$spotlight
       $spotlight.empty()
       $spotlight.append(this._buildImg(thumb, this._getOptions().spotlightHeight))
       this._spotlightThumb = thumb;
